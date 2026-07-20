@@ -1,0 +1,46 @@
+{
+  "name": "portable-ai-chatbot",
+  "version": "1.0.0",
+  "description": "A lightweight, configurable AI twin for personal websites.",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryukiamor-maker/Amoura_AI_ChatBot.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run test && npm run typecheck && npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@ai-sdk/deepseek": "^3.0.12",
+    "@ai-sdk/react": "^4.0.34",
+    "ai": "^7.0.31",
+    "lucide-react": "^0.548.0",
+    "motion": "^12.42.2",
+    "next": "^16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "jsdom": "^29.0.0",
+    "typescript": "^6.0.0",
+    "vitest": "^4.1.10"
+  }
+}

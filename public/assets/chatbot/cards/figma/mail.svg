@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="lucide/mail" clip-path="url(#clip0_0_19)">
+<path id="Vector" d="M12.8337 4.08301L7.58891 7.42376C7.41093 7.52713 7.20877 7.58158 7.00295 7.58158C6.79713 7.58158 6.59497 7.52713 6.41699 7.42376L1.16699 4.08301M2.33366 2.33301H11.667C12.3113 2.33301 12.8337 2.85534 12.8337 3.49967V10.4997C12.8337 11.144 12.3113 11.6663 11.667 11.6663H2.33366C1.68933 11.6663 1.16699 11.144 1.16699 10.4997V3.49967C1.16699 2.85534 1.68933 2.33301 2.33366 2.33301Z" stroke="var(--stroke-0, white)" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_0_19">
+<rect width="14" height="14" fill="white"/>
+</clipPath>
+</defs>
+</svg>
