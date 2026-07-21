@@ -129,7 +129,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* Blank integration preview. */
-.preview-blank { width: 100%; min-width: 100vw; min-height: 100vh; min-height: 100dvh; overflow: hidden; background: #dff4ff url('/assets/preview/ai-bg-039.png') center / cover no-repeat; }
+.preview-blank { width: 100%; min-width: 100vw; min-height: 100vh; min-height: 100dvh; overflow: hidden; background: #dff4ff url('/projects/amoura-ai-chatbot/assets/preview/ai-bg-039.png') center / cover no-repeat; }
 .preview-page-actions { position: fixed; top: 18px; right: 18px; z-index: 10; display: flex; gap: 8px; }
 .preview-config-link, .preview-language-toggle { display: inline-flex; height: 34px; align-items: center; gap: 7px; padding: 0 12px; color: #555; font-size: 11px; background: #fff; border: 1px solid rgba(0,0,0,.1); border-radius: 999px; box-shadow: 0 4px 14px rgba(0,0,0,.05); cursor: pointer; transition: color 160ms ease, border-color 160ms ease, transform 160ms ease; }
 .preview-config-link:hover, .preview-language-toggle:hover { color: #111; border-color: rgba(0,0,0,.18); transform: translateY(-1px); }

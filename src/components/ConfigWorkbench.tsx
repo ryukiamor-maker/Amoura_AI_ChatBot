@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { ChatbotWidget, chatbotConfigSchema, migrateChatbotConfig, type ChatbotConfig, type ChatLocale } from '@/chatbot'
 import { CardsEditor, KnowledgeEditor } from '@/components/FriendlyConfigEditors'
+import { withBasePath } from '@/lib/base-path'
 
 type SectionKey = 'runtime' | 'identity' | 'knowledge' | 'cards' | 'launcher' | 'appearance' | 'transfer'
 type Notice = { kind: 'error' | 'success' | 'working'; text: string } | null
@@ -41,7 +42,7 @@ function ImageSourceField({ label, locale, onChange, value }: { label: string; l
   return (
     <Field hint={copy(locale, 'Paste a public path or HTTPS URL, or choose a local image (up to 1 MB).', '可填写公共路径或 HTTPS 地址，也可选择本地图片（最大 1 MB）。')} label={label}>
       <div className="image-source-field">
-        <button aria-label={copy(locale, 'Choose a local image', '选择本地图片')} className="image-source-field__preview" onClick={() => inputRef.current?.click()} type="button"><img alt="" src={value} /></button>
+        <button aria-label={copy(locale, 'Choose a local image', '选择本地图片')} className="image-source-field__preview" onClick={() => inputRef.current?.click()} type="button"><img alt="" src={withBasePath(value)} /></button>
         <input value={value} onChange={(event) => onChange(event.target.value)} />
         <input accept="image/*" hidden onChange={(event) => void selectLocalImage(event.target.files?.[0])} ref={inputRef} type="file" />
       </div>
@@ -97,7 +98,7 @@ export function ConfigWorkbench({ apiKeyConfigured, initialConfig }: { apiKeyCon
     if (!parsed.success) { setNotice({ kind: 'error', text: parsed.error.issues[0]?.message || copy(locale, 'Configuration is invalid.', '配置内容有误。') }); return }
     setNotice({ kind: 'working', text: copy(locale, 'Saving…', '正在保存…') })
     try {
-      const response = await fetch('/api/config', {
+      const response = await fetch(withBasePath('/api/config'), {
         body: JSON.stringify(parsed.data), headers: { 'Content-Type': 'application/json' }, method: 'PUT'
       })
       const body = await response.json() as { config?: ChatbotConfig; error?: string }
@@ -109,7 +110,7 @@ export function ConfigWorkbench({ apiKeyConfigured, initialConfig }: { apiKeyCon
   async function testConnection() {
     setNotice({ kind: 'working', text: copy(locale, 'Testing provider…', '正在测试接口…') })
     try {
-      const response = await fetch('/api/config/test', { body: JSON.stringify({ api: draft.api }), headers: { 'Content-Type': 'application/json' }, method: 'POST' })
+      const response = await fetch(withBasePath('/api/config/test'), { body: JSON.stringify({ api: draft.api }), headers: { 'Content-Type': 'application/json' }, method: 'POST' })
       const body = await response.json() as { error?: string; latencyMs?: number; ok?: boolean }
       if (!response.ok || !body.ok) throw new Error(body.error || copy(locale, 'Connection failed.', '连接失败。'))
       setNotice({ kind: 'success', text: copy(locale, `Provider replied in ${body.latencyMs} ms.`, `接口响应正常，耗时 ${body.latencyMs} 毫秒。`) })

@@ -4,6 +4,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { withBasePath } from '@/lib/base-path'
 import { readSessionDraft, writeSessionDraft } from '../session'
 
 export function ChatPromptInput({
@@ -108,7 +109,7 @@ export function ChatPromptInput({
       >
         <span className="t-icon-swap chatbot-prompt__icon-swap" data-state={isBusy ? 'b' : 'a'}>
           <span className="t-icon" data-icon="a">
-            <img alt="" aria-hidden="true" src="/assets/chatbot/icons/arrow-up.svg" />
+            <img alt="" aria-hidden="true" src={withBasePath('/assets/chatbot/icons/arrow-up.svg')} />
           </span>
           <span className="t-icon" data-icon="b">
             <span className="chatbot-prompt__stop-icon" />

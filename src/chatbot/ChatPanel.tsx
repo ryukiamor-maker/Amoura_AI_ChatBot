@@ -4,6 +4,7 @@ import { useChat } from '@ai-sdk/react'
 import { RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 
+import { withBasePath } from '@/lib/base-path'
 import { ChatMessages } from './core/ChatMessages'
 import { ChatPromptInput } from './core/ChatPromptInput'
 import { SuggestedActions } from './core/SuggestedActions'
@@ -168,7 +169,7 @@ export function PortfolioChatPanel({
             onClick={onClose}
             type="button"
           >
-            <img alt="" aria-hidden="true" src="/assets/chatbot/icons/close.svg" />
+            <img alt="" aria-hidden="true" src={withBasePath('/assets/chatbot/icons/close.svg')} />
           </button>
         </div>
         <SuggestedActions config={config} disabled={isBusy} locale={locale} onSelect={send} />

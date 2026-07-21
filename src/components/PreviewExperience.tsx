@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { ChatbotWidget, type ChatbotConfig, type ChatLocale } from '@/chatbot'
+import { withBasePath } from '@/lib/base-path'
 
 type LauncherGuideRect = {
   height: number
@@ -133,7 +134,7 @@ export function PreviewExperience({ canConfigure, config }: { config: ChatbotCon
           ref={guideRef}
         >
           <span>{locale === 'zh' ? '拖动按钮调整位置，点击开始' : 'Drag to position · click to begin'}</span>
-          <img alt="" src="/assets/preview/cloud-click-arrow.svg" />
+          <img alt="" src={withBasePath('/assets/preview/cloud-click-arrow.svg')} />
         </div>
       </main>
       <ChatbotWidget config={previewConfig} locale={locale} overlayScope="host" />

@@ -4,6 +4,7 @@ import { ChevronDown, Plus, Trash2, Upload } from 'lucide-react'
 import { useRef, type ReactNode } from 'react'
 
 import type { ChatbotConfig, ChatLocale } from '@/chatbot'
+import { withBasePath } from '@/lib/base-path'
 
 type UpdateConfig = (mutator: (next: ChatbotConfig) => void) => void
 type LocalizedText = { en: string; zh: string }
@@ -27,7 +28,7 @@ function SuggestionIconUpload({ locale, onChange, value }: { locale: ChatLocale;
   return (
     <Field label={copy(locale, 'Custom icon', '自定义图标')}>
       <div className="friendly-icon-upload">
-        <button aria-label={copy(locale, 'Choose custom icon', '选择自定义图标')} className="friendly-icon-upload__preview" onClick={() => inputRef.current?.click()} type="button">{value ? <img alt="" src={value} /> : <Upload size={13} />}</button>
+        <button aria-label={copy(locale, 'Choose custom icon', '选择自定义图标')} className="friendly-icon-upload__preview" onClick={() => inputRef.current?.click()} type="button">{value ? <img alt="" src={withBasePath(value)} /> : <Upload size={13} />}</button>
         <button onClick={() => inputRef.current?.click()} type="button">{value ? copy(locale, 'Replace image', '替换图片') : copy(locale, 'Choose image', '选择图片')}</button>
         <input accept="image/*" hidden onChange={(event) => selectFile(event.target.files?.[0])} ref={inputRef} type="file" />
       </div>
@@ -127,7 +128,7 @@ export function KnowledgeEditor({ config, locale, update }: { config: ChatbotCon
         {config.suggestions.map((item, index) => (
           <ItemCard key={item.id} title={`${copy(locale, 'Shortcut', '快捷按钮')} ${index + 1}`} removeLabel={copy(locale, 'Remove shortcut', '删除快捷按钮')} onRemove={() => update((next) => { next.suggestions.splice(index, 1) })}>
             <div className="friendly-inline">
-              <Field label={copy(locale, 'Icon', '图标')}><span className="friendly-icon-picker">{item.icon === 'none' ? <i aria-hidden="true" /> : <img alt="" src={item.icon === 'custom' ? item.iconUrl || '/assets/chatbot/icons/ai.svg' : `/assets/chatbot/icons/${item.icon}.svg`} />}<select value={item.icon} onChange={(event) => update((next) => { next.suggestions[index].icon = event.target.value as typeof item.icon })}><option value="work">{copy(locale, 'Work', '作品')}</option><option value="ai">AI</option><option value="background">{copy(locale, 'Background', '经历')}</option><option value="contact">{copy(locale, 'Contact', '联系')}</option><option value="location">{copy(locale, 'Location', '地点')}</option><option value="custom">{copy(locale, 'Custom icon', '自定义图标')}</option><option value="none">{copy(locale, 'No icon', '不显示图标')}</option></select></span></Field>
+              <Field label={copy(locale, 'Icon', '图标')}><span className="friendly-icon-picker">{item.icon === 'none' ? <i aria-hidden="true" /> : <img alt="" src={withBasePath(item.icon === 'custom' ? item.iconUrl || '/assets/chatbot/icons/ai.svg' : `/assets/chatbot/icons/${item.icon}.svg`)} />}<select value={item.icon} onChange={(event) => update((next) => { next.suggestions[index].icon = event.target.value as typeof item.icon })}><option value="work">{copy(locale, 'Work', '作品')}</option><option value="ai">AI</option><option value="background">{copy(locale, 'Background', '经历')}</option><option value="contact">{copy(locale, 'Contact', '联系')}</option><option value="location">{copy(locale, 'Location', '地点')}</option><option value="custom">{copy(locale, 'Custom icon', '自定义图标')}</option><option value="none">{copy(locale, 'No icon', '不显示图标')}</option></select></span></Field>
               <Field label={copy(locale, 'Card after answer', '回答后显示卡片')}><select value={item.card} onChange={(event) => update((next) => { next.suggestions[index].card = event.target.value as typeof item.card })}><option value="none">{copy(locale, 'Text only', '仅显示文字')}</option><option value="projects">{copy(locale, 'Projects', '项目卡片')}</option><option value="profile">{copy(locale, 'Profile', '资料卡片')}</option><option value="timeline">{copy(locale, 'Timeline', '时间线卡片')}</option><option value="contact">{copy(locale, 'Contact', '联系卡片')}</option><option value="location">{copy(locale, 'Location', '地点卡片')}</option></select></Field>
             </div>
             {item.icon === 'custom' ? <SuggestionIconUpload locale={locale} onChange={(value) => update((next) => { next.suggestions[index].iconUrl = value })} value={item.iconUrl} /> : null}

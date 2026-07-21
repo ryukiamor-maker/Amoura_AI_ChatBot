@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react'
 
+import { withBasePath } from '@/lib/base-path'
 import type { ChatbotConfig, ChatLocale } from '../schema'
 
 export function SuggestedActions({
@@ -25,7 +26,7 @@ export function SuggestedActions({
           style={{ '--suggestion-index': index } as CSSProperties}
           type="button"
         >
-          {item.iconUrl || (item.icon !== 'none' && item.icon !== 'custom') ? <img alt="" aria-hidden="true" src={item.iconUrl || `/assets/chatbot/icons/${item.icon}.svg`} /> : null}
+          {item.iconUrl || (item.icon !== 'none' && item.icon !== 'custom') ? <img alt="" aria-hidden="true" src={withBasePath(item.iconUrl || `/assets/chatbot/icons/${item.icon}.svg`)} /> : null}
           {item.label[locale]}
         </button>
       ))}

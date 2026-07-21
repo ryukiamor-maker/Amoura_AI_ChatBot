@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 
+import { withBasePath } from '@/lib/base-path'
 import type { ChatbotConfig, ChatLocale } from './schema'
 import type { ChatbotTransitionPhase } from './types'
 import { GlassSurface } from './GlassSurface'
@@ -77,7 +78,7 @@ export type ChatbotWidgetProps = {
 }
 
 export function ChatbotWidget({
-  apiEndpoint = '/api/chat',
+  apiEndpoint = withBasePath('/api/chat'),
   config,
   locale = config.defaultLocale,
   overlayScope = 'viewport'
@@ -577,7 +578,7 @@ export function ChatbotWidget({
           type="button"
         >
           <span className="chatbot-launcher__content">
-            <img alt="" aria-hidden="true" src={config.launcher.iconUrl} />
+            <img alt="" aria-hidden="true" src={withBasePath(config.launcher.iconUrl)} />
             <span>{config.launcher.label[locale]}</span>
           </span>
         </button>

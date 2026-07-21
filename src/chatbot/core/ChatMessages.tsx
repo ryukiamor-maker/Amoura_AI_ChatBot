@@ -5,6 +5,7 @@ import { ArrowDown } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { withBasePath } from '@/lib/base-path'
 import { PortfolioToolCard, type PortfolioToolPart } from './ToolCard'
 import { getBotGreeting } from '../greeting'
 import type { ChatbotConfig, ChatLocale } from '../schema'
@@ -338,7 +339,7 @@ export function ChatMessages({
                   alt=""
                   aria-hidden="true"
                   className="chatbot-welcome__avatar"
-                  src={config.assistant.avatarUrl}
+                  src={withBasePath(config.assistant.avatarUrl)}
                 />
                 <StreamingText
                   className="chatbot-welcome__copy"
@@ -409,7 +410,7 @@ export function ChatMessages({
                     alt=""
                     aria-hidden="true"
                     className="chatbot-message__avatar"
-                    src={config.assistant.avatarUrl}
+                    src={withBasePath(config.assistant.avatarUrl)}
                   />
                 ) : null}
                 <div className="chatbot-message__content">
@@ -438,7 +439,7 @@ export function ChatMessages({
                 alt=""
                 aria-hidden="true"
                 className="chatbot-thinking__avatar"
-                src={config.assistant.avatarUrl}
+                src={withBasePath(config.assistant.avatarUrl)}
               />
               <span
                 className="t-shimmer"
