@@ -26,6 +26,11 @@ const requestSchema = z.object({
   messages: z.array(z.unknown()).min(1).max(40)
 })
 
+function noStore<T extends Response>(response: T) {
+  response.headers.set('Cache-Control', 'private, no-store')
+  return response
+}
+
 function latestUserText(messages: ChatMessage[]) {
   return [...messages].reverse().find((message) => message.role === 'user')?.parts
     .filter((part) => part.type === 'text')
@@ -61,19 +66,19 @@ function mockResponse(messages: ChatMessage[], locale: 'en' | 'zh', config: Awai
     },
     onError: () => 'The mock response could not be generated.'
   })
-  return createUIMessageStreamResponse({ stream })
+  return noStore(createUIMessageStreamResponse({ stream }))
 }
 
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) {
-    return NextResponse.json({ error: 'Same-origin request required.' }, { status: 403 })
+    return noStore(NextResponse.json({ error: 'Same-origin request required.' }, { status: 403 }))
   }
   const rate = chatbotRateLimiter.consume(getClientIp(request))
   if (!rate.allowed) {
-    return NextResponse.json({ error: 'Too many requests. Please wait and try again.' }, {
+    return noStore(NextResponse.json({ error: 'Too many requests. Please wait and try again.' }, {
       headers: { 'Retry-After': String(rate.retryAfterSeconds) },
       status: 429
-    })
+    }))
   }
 
   try {
@@ -82,19 +87,19 @@ export async function POST(request: Request) {
     const tools = createChatTools(config)
     const validated = await safeValidateUIMessages<ChatMessage>({ messages: body.messages, tools })
     if (!validated.success) {
-      return NextResponse.json({ error: 'The chat messages are invalid.' }, { status: 400 })
+      return noStore(NextResponse.json({ error: 'The chat messages are invalid.' }, { status: 400 }))
     }
     const messages = validated.data
     const userText = latestUserText(messages)
     if (!userText || userText.length > 4000) {
-      return NextResponse.json({ error: 'The message must contain between 1 and 4,000 characters.' }, { status: 400 })
+      return noStore(NextResponse.json({ error: 'The message must contain between 1 and 4,000 characters.' }, { status: 400 }))
     }
 
     if (config.mode === 'mock') return mockResponse(messages, body.locale, config)
 
     const apiKey = process.env.DEEPSEEK_API_KEY?.trim() || process.env.CHATBOT_API_KEY?.trim()
     if (!apiKey) {
-      return NextResponse.json({ error: 'Live mode requires DEEPSEEK_API_KEY on the server.' }, { status: 503 })
+      return noStore(NextResponse.json({ error: 'Live mode requires DEEPSEEK_API_KEY on the server.' }, { status: 503 }))
     }
     const provider = createDeepSeek({
       apiKey,
@@ -114,12 +119,12 @@ export async function POST(request: Request) {
       temperature: 0.25,
       tools
     })
-    return result.toUIMessageStreamResponse({
+    return noStore(result.toUIMessageStreamResponse({
       onError: () => 'The live provider failed to complete this response.'
-    })
+    }))
   } catch (error) {
-    return NextResponse.json({
+    return noStore(NextResponse.json({
       error: error instanceof z.ZodError ? 'The request body is invalid.' : 'The chat request could not be completed.'
-    }, { status: error instanceof z.ZodError ? 400 : 500 })
+    }, { status: error instanceof z.ZodError ? 400 : 500 }))
   }
 }
