@@ -19,7 +19,7 @@ import type { ChatMessage, MockToolPlan } from '@/chatbot/types'
 import { createMockResponsePlan } from '@/chatbot/mock/createMockResponsePlan'
 import { buildSystemPrompt, createChatTools } from '@/lib/chat-server'
 import { readChatbotConfig } from '@/lib/config-server'
-import { chatbotRateLimiter, getClientIp, isSameOriginRequest } from '@/lib/request-security'
+import { chatbotRateLimiter, getClientIp, isAllowedOrigin, writeSecurityLog } from '@/lib/request-security'
 
 const requestSchema = z.object({
   locale: chatLocaleSchema.default('en'),
@@ -70,20 +70,50 @@ function mockResponse(messages: ChatMessage[], locale: 'en' | 'zh', config: Awai
 }
 
 export async function POST(request: Request) {
-  if (!isSameOriginRequest(request)) {
-    return noStore(NextResponse.json({ error: 'Same-origin request required.' }, { status: 403 }))
-  }
-  const rate = chatbotRateLimiter.consume(getClientIp(request))
-  if (!rate.allowed) {
-    return noStore(NextResponse.json({ error: 'Too many requests. Please wait and try again.' }, {
-      headers: { 'Retry-After': String(rate.retryAfterSeconds) },
-      status: 429
-    }))
-  }
+  const requestId = crypto.randomUUID()
+  const startedAt = Date.now()
+  let originAllowed = false
+  let rateLimited = false
+  let status = 200
+  let mode: 'mock' | 'live' | 'unknown' = 'unknown'
 
   try {
+    // 1. Origin validation — strict whitelist + same-origin
+    if (!isAllowedOrigin(request)) {
+      status = 403
+      originAllowed = false
+      writeSecurityLog({ requestId, originAllowed, mode, rateLimited, status, durationMs: Date.now() - startedAt })
+      return noStore(NextResponse.json({ error: 'Same-origin request required.' }, { status: 403 }))
+    }
+    originAllowed = true
+
     const body = requestSchema.parse(await request.json())
     const config = await readChatbotConfig()
+    mode = config.mode ?? 'mock'
+
+    // 2. Rate limiting — skipped for mock mode (no billing model)
+    //    Live mode: current in-process Map is a temporary measure.
+    //    Production should use Cloudflare edge rate limiting on the Lab chat path.
+    if (mode !== 'mock') {
+      const rate = chatbotRateLimiter.consume(getClientIp(request))
+      if (!rate.allowed) {
+        rateLimited = true
+        status = 429
+        writeSecurityLog({ requestId, originAllowed, mode, rateLimited, status, durationMs: Date.now() - startedAt })
+        return noStore(
+          NextResponse.json(
+            { error: 'Too many requests. Please wait and try again.' },
+            {
+              headers: { 'Retry-After': String(rate.retryAfterSeconds) },
+              status: 429,
+            },
+          ),
+        )
+      }
+    }
+
+    // Security checks passed — log before processing
+    writeSecurityLog({ requestId, originAllowed, mode, rateLimited, status, durationMs: Date.now() - startedAt })
     const tools = createChatTools(config)
     const validated = await safeValidateUIMessages<ChatMessage>({ messages: body.messages, tools })
     if (!validated.success) {
