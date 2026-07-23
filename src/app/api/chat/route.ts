@@ -76,13 +76,16 @@ export async function POST(request: Request) {
   let rateLimited = false
   let status = 200
   let mode: 'mock' | 'live' | 'unknown' = 'unknown'
+  const logStatus = (nextStatus: number) => {
+    status = nextStatus
+    writeSecurityLog({ requestId, originAllowed, mode, rateLimited, status, durationMs: Date.now() - startedAt })
+  }
 
   try {
     // 1. Origin validation — strict whitelist + same-origin
     if (!isAllowedOrigin(request)) {
-      status = 403
       originAllowed = false
-      writeSecurityLog({ requestId, originAllowed, mode, rateLimited, status, durationMs: Date.now() - startedAt })
+      logStatus(403)
       return noStore(NextResponse.json({ error: 'Same-origin request required.' }, { status: 403 }))
     }
     originAllowed = true
@@ -98,8 +101,7 @@ export async function POST(request: Request) {
       const rate = chatbotRateLimiter.consume(getClientIp(request))
       if (!rate.allowed) {
         rateLimited = true
-        status = 429
-        writeSecurityLog({ requestId, originAllowed, mode, rateLimited, status, durationMs: Date.now() - startedAt })
+        logStatus(429)
         return noStore(
           NextResponse.json(
             { error: 'Too many requests. Please wait and try again.' },
@@ -112,23 +114,28 @@ export async function POST(request: Request) {
       }
     }
 
-    // Security checks passed — log before processing
-    writeSecurityLog({ requestId, originAllowed, mode, rateLimited, status, durationMs: Date.now() - startedAt })
     const tools = createChatTools(config)
     const validated = await safeValidateUIMessages<ChatMessage>({ messages: body.messages, tools })
     if (!validated.success) {
+      logStatus(400)
       return noStore(NextResponse.json({ error: 'The chat messages are invalid.' }, { status: 400 }))
     }
     const messages = validated.data
     const userText = latestUserText(messages)
     if (!userText || userText.length > 4000) {
+      logStatus(400)
       return noStore(NextResponse.json({ error: 'The message must contain between 1 and 4,000 characters.' }, { status: 400 }))
     }
 
-    if (config.mode === 'mock') return mockResponse(messages, body.locale, config)
+    if (config.mode === 'mock') {
+      const response = mockResponse(messages, body.locale, config)
+      logStatus(200)
+      return response
+    }
 
     const apiKey = process.env.DEEPSEEK_API_KEY?.trim() || process.env.CHATBOT_API_KEY?.trim()
     if (!apiKey) {
+      logStatus(503)
       return noStore(NextResponse.json({ error: 'Live mode requires DEEPSEEK_API_KEY on the server.' }, { status: 503 }))
     }
     const provider = createDeepSeek({
@@ -149,12 +156,16 @@ export async function POST(request: Request) {
       temperature: 0.25,
       tools
     })
-    return noStore(result.toUIMessageStreamResponse({
+    const response = noStore(result.toUIMessageStreamResponse({
       onError: () => 'The live provider failed to complete this response.'
     }))
+    logStatus(200)
+    return response
   } catch (error) {
+    const errorStatus = error instanceof z.ZodError ? 400 : 500
+    logStatus(errorStatus)
     return noStore(NextResponse.json({
       error: error instanceof z.ZodError ? 'The request body is invalid.' : 'The chat request could not be completed.'
-    }, { status: error instanceof z.ZodError ? 400 : 500 }))
+    }, { status: errorStatus }))
   }
 }

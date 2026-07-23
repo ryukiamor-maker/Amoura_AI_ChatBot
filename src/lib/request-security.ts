@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto'
-
 /**
  * Reads the `CHATBOT_ALLOWED_ORIGINS` environment variable.
  *
@@ -63,15 +61,6 @@ export function isSameOriginRequest(request: Request): boolean {
   }
 }
 
-/**
- * Returns a privacy-safe HMAC of an IP address.
- * Used only in structured logs — raw IPs are never logged.
- */
-function hmacIp(ip: string): string {
-  const secret = process.env.CHATBOT_HMAC_SECRET?.trim() || 'fallback'
-  return createHash('sha256').update(`${secret}:${ip}`).digest('hex').slice(0, 16)
-}
-
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
   return forwarded || request.headers.get('x-real-ip')?.trim() || 'local'
@@ -122,8 +111,6 @@ type SecurityLog = {
   rateLimited: boolean
   status: number
   durationMs: number
-  /** HMAC of client IP — never raw IP */
-  ipHmac?: string
 }
 
 /**
